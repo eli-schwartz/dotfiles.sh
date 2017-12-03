@@ -1,0 +1,175 @@
+#!/bin/bash
+# vim: fdm=marker
+
+[[ -f ${XDG_CONFIG_HOME:-$HOME/.config}/dotfiles.conf ]] && source "${XDG_CONFIG_HOME:-$HOME/.config}"/dotfiles.conf
+
+usage() {
+	cat <<- _EOF_
+		Usage: dotfiles [-h|--help] <COMMAND>
+		Thin wrapper around git to version dotfiles. Most commands are passed
+		straight through to git with a custom GIT_DIR to store dotfiles metadata
+		outside of the top-level home directory.
+
+		OPTIONS
+		    -h, --help      Show this usage message
+
+		CUSTOM COMMANDS
+		    init            Init a bare git repository and set it up as an
+		                      empty dotfiles repository
+		    clone           Clone an existing dotfiles repository and integrate
+		                      it with \$HOME. If existing files clash with repository
+		                      files, they must be manually resolved.
+		    ignore          Add new strings to gitignore, or edit the gitignore
+		                      directly, without using ~/.gitignore
+		    readme          Edit the repository README.md without using ~/README.md
+_EOF_
+}
+
+error() {
+    local mesg="${1:-An unknown error occurred.}"
+    printf "==> ERROR: %s\nAborting...\n" "$mesg" 1>&2
+    exit 1
+}
+
+sparse-tree() {
+    cat <<- _EOF_
+	/*
+	!README.md
+	!.gitattributes
+	!.gitignore
+_EOF_
+}
+
+# gitignore {{{
+base-gitignore() {
+    cat <<- _EOF_
+	# XDG user dirs
+	Desktop/
+	Documents/
+	Downloads/
+	Music/
+	Pictures/
+	Public/
+	Templates/
+	Videos/
+
+	# Security
+	.gnupg/*
+	!.gnupg/*.conf
+	.ssh/
+
+	# Common caches
+	.adobe/
+	.atom/
+	.*cache/
+	.gem/
+	.macromedia/
+	.node-gyp/
+	.npm/
+	.thumbnails/
+    .wget-hsts
+	.v8flags*
+
+	# Misc commonly generated files
+	.bash_history
+	.bazaar/
+	.dbus/
+	.dropbox/
+	.ICEauthority
+	.lesshst
+	.python_history
+	.sqlite_history
+	.subversion/
+	.wine/
+	.Xauthority
+	.xsession-errors
+
+	# Misc junk files
+	*~
+	*.bak
+	*.log
+	*.swp
+	*.tmp
+
+	# Automatically appended
+_EOF_
+}
+# }}}
+
+# Init {{{
+init-setup() {
+    echo "dotfiles_dir=$dotfiles_dir" > ~/.config/dotfiles.conf
+    sparse-tree > "$dotfiles_dir"/info/sparse-checkout
+    git --git-dir "$dotfiles_dir" config --local core.bare false
+    git --git-dir "$dotfiles_dir" config --local core.worktree ~
+    git --git-dir "$dotfiles_dir" config --local core.sparseCheckout true
+    git --git-dir "$dotfiles_dir" config --local status.showUntrackedFiles no
+}
+
+init() {
+    if ! dotfiles_dir="$(readlink -m "${1:-.}")"; then
+        error "failed to resolve directory '$1'"
+    fi
+    git init --bare "$dotfiles_dir" || error "failed to init repository in '$1'"
+    init-setup
+    base-gitignore > "$dotfiles_dir"/info/exclude
+}
+
+clone() {
+    if ! dotfiles_dir="$(readlink -m "${2:-dotfiles}")"; then
+        error "failed to resolve directory '$2'"
+    fi
+    git clone --bare "$1" "$dotfiles_dir" || error "failed to clone '$1'"
+    init-setup
+    # If there is no .gitignore yet, this will just clobber some comments
+    git --git-dir "$dotfiles_dir" show :.gitignore > "$dotfiles_dir"/info/exclude 2>/dev/null
+    git --git-dir "$dotfiles_dir" show :.gitattributes > "$dotfiles_dir"/info/attributes 2>/dev/null
+    git --git-dir "$dotfiles_dir" checkout
+}
+# }}}
+
+edit-info() {
+    local infofile="$dotfiles_dir/info/$1" dotfile="$2"; shift 2
+
+    if (( $# == 0 )); then
+        ${EDITOR:-vim} "$infofile"
+    else
+        printf '%s\n' "$@" >> "$infofile"
+    fi
+    git --git-dir="$dotfiles_dir" update-index --add --cacheinfo 10064,$(git --git-dir="$dotfiles_dir" hash-object -w "$infofile"),"$dotfile"
+}
+
+
+readme() {
+    readme_file="$(mktemp --suffix .md)"
+    git --git-dir="$dotfiles_dir" show :README.md > "$readme_file"
+    ${EDITOR:-vim} "$readme_file"
+    git --git-dir="$dotfiles_dir" update-index --add --cacheinfo 10064,$(git --git-dir="$dotfiles_dir" hash-object -w "$readme_file"),README.md
+    rm "$readme_file"
+}
+
+# Main
+
+dot_cmd="$1"
+shift
+
+case $dot_cmd in
+    -h|--help|help)
+        usage
+        exit
+        ;;
+    init|clone)
+        $dot_cmd "$@"
+        ;;
+    ignore)
+        edit-info exclude .gitignore "$@"
+        ;;
+    attributes)
+        edit-info attributes .gitattributes "$@"
+        ;;
+    readme)
+        $dot_cmd
+        ;;
+    *)
+        git --git-dir="$dotfiles_dir" "$dot_cmd" "$@"
+esac
