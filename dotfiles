@@ -35,6 +35,7 @@ sparse_tree() {
     cat <<- _EOF_
 	/*
 	!README.md
+	!LICENSE
 	!.gitattributes
 	!.gitignore
 _EOF_
@@ -66,12 +67,14 @@ base_gitignore() {
 	.macromedia/
 	.node-gyp/
 	.npm/
+	.cargo/
 	.thumbnails/
-    .wget-hsts
+	.wget-hsts
 	.v8flags*
 
 	# Misc commonly generated files
 	.bash_history
+	.zsh_history
 	.bazaar/
 	.dbus/
 	.dropbox/
@@ -79,6 +82,7 @@ base_gitignore() {
 	.lesshst
 	.python_history
 	.sqlite_history
+	.psql_history
 	.subversion/
 	.wine/
 	.Xauthority
