@@ -1,7 +1,7 @@
-#!/bin/bash
+#!/bin/sh
 # vim: fdm=marker
 
-[[ -f ${XDG_CONFIG_HOME:-$HOME/.config}/dotfiles.conf ]] && source "${XDG_CONFIG_HOME:-$HOME/.config}"/dotfiles.conf
+[ -f "${XDG_CONFIG_HOME:-$HOME/.config}"/dotfiles.conf ] && . "${XDG_CONFIG_HOME:-$HOME/.config}"/dotfiles.conf
 
 usage() {
 	cat <<- _EOF_
@@ -31,7 +31,7 @@ error() {
     exit 1
 }
 
-sparse-tree() {
+sparse_tree() {
     cat <<- _EOF_
 	/*
 	!README.md
@@ -41,7 +41,7 @@ _EOF_
 }
 
 # gitignore {{{
-base-gitignore() {
+base_gitignore() {
     cat <<- _EOF_
 	# XDG user dirs
 	Desktop/
@@ -97,9 +97,9 @@ _EOF_
 # }}}
 
 # Init {{{
-init-setup() {
+init_setup() {
     echo "dotfiles_dir=$dotfiles_dir" > ~/.config/dotfiles.conf
-    sparse-tree > "$dotfiles_dir"/info/sparse-checkout
+    sparse_tree > "$dotfiles_dir"/info/sparse-checkout
     git --git-dir "$dotfiles_dir" config --local core.bare false
     git --git-dir "$dotfiles_dir" config --local core.worktree ~
     git --git-dir "$dotfiles_dir" config --local core.sparseCheckout true
@@ -111,8 +111,8 @@ init() {
         error "failed to resolve directory '$1'"
     fi
     git init --bare "$dotfiles_dir" || error "failed to init repository in '$1'"
-    init-setup
-    base-gitignore > "$dotfiles_dir"/info/exclude
+    init_setup
+    base_gitignore > "$dotfiles_dir"/info/exclude
 }
 
 clone() {
@@ -120,7 +120,7 @@ clone() {
         error "failed to resolve directory '$2'"
     fi
     git clone --bare "$1" "$dotfiles_dir" || error "failed to clone '$1'"
-    init-setup
+    init_setup
     # If there is no .gitignore yet, this will just clobber some comments
     git --git-dir "$dotfiles_dir" show :.gitignore > "$dotfiles_dir"/info/exclude 2>/dev/null
     git --git-dir "$dotfiles_dir" show :.gitattributes > "$dotfiles_dir"/info/attributes 2>/dev/null
@@ -128,10 +128,10 @@ clone() {
 }
 # }}}
 
-edit-info() {
+edit_info() {
     local infofile="$dotfiles_dir/info/$1" dotfile="$2"; shift 2
 
-    if (( $# == 0 )); then
+    if [ $# -eq 0 ]; then
         ${EDITOR:-vim} "$infofile"
     else
         printf '%s\n' "$@" >> "$infofile"
@@ -141,7 +141,7 @@ edit-info() {
 
 
 readme() {
-    readme_file="$(mktemp --suffix .md)"
+    local readme_file="$(mktemp --suffix .md)"
     git --git-dir="$dotfiles_dir" show :README.md > "$readme_file"
     ${EDITOR:-vim} "$readme_file"
     git --git-dir="$dotfiles_dir" update-index --add --cacheinfo 10064,$(git --git-dir="$dotfiles_dir" hash-object -w "$readme_file"),README.md
@@ -150,8 +150,11 @@ readme() {
 
 # Main
 
-dot_cmd="$1"
-shift
+if [ -n "$1" ]; then
+    # POSIX shift complains if there is nothing to pop.
+    dot_cmd="$1"
+    shift
+fi
 
 case $dot_cmd in
     -h|--help|help)
@@ -162,14 +165,14 @@ case $dot_cmd in
         $dot_cmd "$@"
         ;;
     ignore)
-        edit-info exclude .gitignore "$@"
+        edit_info exclude .gitignore "$@"
         ;;
     attributes)
-        edit-info attributes .gitattributes "$@"
+        edit_info attributes .gitattributes "$@"
         ;;
     readme)
         $dot_cmd
         ;;
     *)
-        git --git-dir="$dotfiles_dir" "$dot_cmd" "$@"
+        git --git-dir="$dotfiles_dir" $dot_cmd "$@"
 esac
