@@ -141,8 +141,8 @@ edit_info() {
         printf '%s\n' "$@" >> "$infofile"
     fi
     git --git-dir="$dotfiles_dir" update-index --add --cacheinfo 10064,$(git --git-dir="$dotfiles_dir" hash-object -w "$infofile"),"$dotfile"
+    git --git-dir "$dotfiles_dir" checkout --quiet
 }
-
 
 readme() {
     local readme_file="$(mktemp --suffix .md)"
@@ -150,6 +150,7 @@ readme() {
     ${EDITOR:-vim} "$readme_file"
     git --git-dir="$dotfiles_dir" update-index --add --cacheinfo 10064,$(git --git-dir="$dotfiles_dir" hash-object -w "$readme_file"),README.md
     rm "$readme_file"
+    git --git-dir "$dotfiles_dir" checkout --quiet
 }
 
 # Main
