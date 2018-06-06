@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if ! declare -F _git > /dev/null && declare -F _completion_loader > /dev/null; then
-  _completion_loader git
+    _completion_loader git
 fi
 
 _dotfiles() {
