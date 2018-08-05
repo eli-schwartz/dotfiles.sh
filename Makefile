@@ -5,11 +5,11 @@ BASHCOMPDIR ?= $(shell pkg-config bash-completion --variable=completionsdir || e
 ZSHCOMPDIR ?= /usr/share/zsh/site-functions
 
 install:
-	install -Dm755 dotfiles $(DESTDIR)$(BINDIR)/dotfiles
-	install -Dm644 completion/dotfiles.bash $(DESTDIR)$(BASHCOMPDIR)/dotfiles
-	install -Dm644 completion/dotfiles.zsh $(DESTDIR)$(ZSHCOMPDIR)/_dotfiles
+	install -Dm755 dotfiles '$(DESTDIR)$(BINDIR)'/dotfiles
+	install -Dm644 completion/dotfiles.bash '$(DESTDIR)$(BASHCOMPDIR)'/dotfiles
+	install -Dm644 completion/dotfiles.zsh '$(DESTDIR)$(ZSHCOMPDIR)'/_dotfiles
 
 uninstall:
-	rm -f $(DESTDIR)$(BINDIR)/dotfiles
-	rm -f $(DESTDIR)$(BASHCOMPDIR)/dotfiles
-	rm -f $(DESTDIR)$(ZSHCOMPDIR)/_dotfiles
+	rm -f '$(DESTDIR)$(BINDIR)'/dotfiles
+	rm -f '$(DESTDIR)$(BASHCOMPDIR)'/dotfiles
+	rm -f '$(DESTDIR)$(ZSHCOMPDIR)'/_dotfiles
