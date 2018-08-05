@@ -102,7 +102,8 @@ _EOF_
 
 # Init {{{
 init_setup() {
-    echo "dotfiles_dir=$dotfiles_dir" > ~/.config/dotfiles.conf
+    mkdir -p "${XDG_CONFIG_HOME:-$HOME/.config}"
+    echo "dotfiles_dir=$dotfiles_dir" > "${XDG_CONFIG_HOME:-$HOME/.config}"/dotfiles.conf
     sparse_tree > "$dotfiles_dir"/info/sparse-checkout
     git --git-dir "$dotfiles_dir" config --local core.bare false
     git --git-dir "$dotfiles_dir" config --local core.worktree ~
