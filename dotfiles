@@ -102,6 +102,7 @@ _EOF_
 
 # Init {{{
 init_setup() {
+    mkdir -p ~/.config
     echo "dotfiles_dir=$dotfiles_dir" > ~/.config/dotfiles.conf
     sparse_tree > "$dotfiles_dir"/info/sparse-checkout
     git --git-dir "$dotfiles_dir" config --local core.bare false
