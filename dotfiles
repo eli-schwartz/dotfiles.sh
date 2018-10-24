@@ -146,11 +146,11 @@ edit_info() {
 }
 
 readme() {
-    local readme_file="$(mktemp --suffix .md)"
+    local readme_file="$(mktemp -dt dotfiles.XXXXXX)/README.md"
     git --git-dir="$dotfiles_dir" show :README.md > "$readme_file"
     ${EDITOR:-vim} "$readme_file"
     git --git-dir="$dotfiles_dir" update-index --add --cacheinfo 10064,$(git --git-dir="$dotfiles_dir" hash-object -w "$readme_file"),README.md
-    rm "$readme_file"
+    rm -r "${readme_file%README.md}"
     git --git-dir "$dotfiles_dir" checkout --quiet
 }
 
