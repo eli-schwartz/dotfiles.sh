@@ -127,8 +127,8 @@ clone() {
     git clone --bare "$1" "$dotfiles_dir" || error "failed to clone '$1'"
     init_setup
     # If there is no .gitignore yet, this will just clobber some comments
-    git --git-dir "$dotfiles_dir" show :.gitignore > "$dotfiles_dir"/info/exclude 2>/dev/null
-    git --git-dir "$dotfiles_dir" show :.gitattributes > "$dotfiles_dir"/info/attributes 2>/dev/null
+    git --git-dir "$dotfiles_dir" show HEAD:.gitignore > "$dotfiles_dir"/info/exclude 2>/dev/null
+    git --git-dir "$dotfiles_dir" show HEAD:.gitattributes > "$dotfiles_dir"/info/attributes 2>/dev/null
     git --git-dir "$dotfiles_dir" checkout
 }
 # }}}
