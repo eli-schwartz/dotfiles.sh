@@ -31,3 +31,8 @@ fileglob1        crypt
 ```
 
 The git-crypt key will be stored in `$GIT_DIR/git-crypt/` and can be exported and transferred separately.
+
+## Using on Mac OS X
+Install coreutils from homebrew to get the `greadlink` utility before trying to `init` or `clone`.
+
+    brew install coreutils

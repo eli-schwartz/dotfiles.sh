@@ -112,8 +112,14 @@ init_setup() {
 }
 
 init() {
-    if ! dotfiles_dir="$(readlink -m "${1:-.}")"; then
-        error "failed to resolve directory '$1'"
+    if [ "$(uname -s)" = "Darwin" ]; then
+        if ! dotfiles_dir="$(greadlink -m "${1:-.}")"; then
+            error "failed to resolve directory '$1'"
+        fi
+    else
+        if ! dotfiles_dir="$(readlink -m "${1:-.}")"; then
+            error "failed to resolve directory '$1'"
+        fi
     fi
     git init --bare "$dotfiles_dir" || error "failed to init repository in '$1'"
     init_setup
@@ -121,8 +127,14 @@ init() {
 }
 
 clone() {
-    if ! dotfiles_dir="$(readlink -m "${2:-dotfiles}")"; then
-        error "failed to resolve directory '$2'"
+    if [ "$(uname -s)" = "Darwin" ]; then
+        if ! dotfiles_dir="$(greadlink -m "${2:-dotfiles}")"; then
+            error "failed to resolve directory '$2'"
+        fi
+    else
+        if ! dotfiles_dir="$(readlink -m "${2:-dotfiles}")"; then
+            error "failed to resolve directory '$2'"
+        fi
     fi
     git clone --bare "$1" "$dotfiles_dir" || error "failed to clone '$1'"
     init_setup
