@@ -112,7 +112,7 @@ init_setup() {
 }
 
 init() {
-    if ! dotfiles_dir="$(readlink -m "${1:-.}")"; then
+    if ! dotfiles_dir="$("$readlink" -m "${1:-.}")"; then
         error "failed to resolve directory '$1'"
     fi
     git init --bare "$dotfiles_dir" || error "failed to init repository in '$1'"
@@ -121,7 +121,7 @@ init() {
 }
 
 clone() {
-    if ! dotfiles_dir="$(readlink -m "${2:-dotfiles}")"; then
+    if ! dotfiles_dir="$("$readlink" -m "${2:-dotfiles}")"; then
         error "failed to resolve directory '$2'"
     fi
     git clone --bare "$1" "$dotfiles_dir" || error "failed to clone '$1'"
@@ -155,6 +155,9 @@ readme() {
 }
 
 # Main
+
+# prefer GNU-prefixed readlink for macOS
+readlink=$(command -v greadlink || command -v readlink)
 
 if [ -n "$1" ]; then
     # POSIX shift complains if there is nothing to pop.
