@@ -1,4 +1,5 @@
 #compdef dotfiles
+# SPDX-License-Identifier: GPL-2.0-or-later
 
 _dotfiles () {
     local dotfiles_dir GIT_DIR

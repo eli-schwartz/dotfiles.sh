@@ -1,4 +1,5 @@
 #!/bin/bash
+# SPDX-License-Identifier: GPL-2.0-or-later
 
 if ! declare -F _git > /dev/null && declare -F _completion_loader > /dev/null; then
     _completion_loader git

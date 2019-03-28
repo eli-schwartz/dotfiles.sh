@@ -37,3 +37,7 @@ The git-crypt key will be stored in `$GIT_DIR/git-crypt/` and can be exported an
 `/bin/sh` with support for the `local` keyword is assumed. This is the default on systems where the default `sh` is: bash (macOS, most forms of Linux), busybox (embedded Linux), or ash/dash (Debian, BSD).
 
 A `readlink` utility supporting GNU's `-m` option is assumed. If the GNU coreutils version is available via the name `greadlink`, for example on macOS via `brew install coreutils`, it will be preferred.
+
+## License
+
+This project is licensed under the terms of the GNU General Public License, version 2, or (at your option) any later version.
