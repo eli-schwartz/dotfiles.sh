@@ -118,15 +118,19 @@ _EOF_
 }
 # }}}
 
+_git() {
+    git --git-dir="$dotfiles_dir" "$@"
+}
+
 # Init {{{
 init_setup() {
     mkdir -p "${XDG_CONFIG_HOME:-$HOME/.config}"
     echo "dotfiles_dir=$dotfiles_dir" > "${XDG_CONFIG_HOME:-$HOME/.config}"/dotfiles.conf
     sparse_tree > "$dotfiles_dir"/info/sparse-checkout
-    git --git-dir "$dotfiles_dir" config --local core.bare false
-    git --git-dir "$dotfiles_dir" config --local core.worktree ~
-    git --git-dir "$dotfiles_dir" config --local core.sparseCheckout true
-    git --git-dir "$dotfiles_dir" config --local status.showUntrackedFiles no
+    _git config --local core.bare false
+    _git config --local core.worktree ~
+    _git config --local core.sparseCheckout true
+    _git config --local status.showUntrackedFiles no
 }
 
 init() {
@@ -145,9 +149,9 @@ clone() {
     git clone --bare "$1" "$dotfiles_dir" || error "failed to clone '$1'"
     init_setup
     # If there is no .gitignore yet, this will just clobber some comments
-    git --git-dir "$dotfiles_dir" show HEAD:.gitignore > "$dotfiles_dir"/info/exclude 2>/dev/null
-    git --git-dir "$dotfiles_dir" show HEAD:.gitattributes > "$dotfiles_dir"/info/attributes 2>/dev/null
-    git --git-dir "$dotfiles_dir" checkout
+    _git show HEAD:.gitignore > "$dotfiles_dir"/info/exclude 2>/dev/null
+    _git show HEAD:.gitattributes > "$dotfiles_dir"/info/attributes 2>/dev/null
+    _git checkout
 }
 # }}}
 
@@ -159,17 +163,17 @@ edit_info() {
     else
         printf '%s\n' "$@" >> "$infofile"
     fi
-    git --git-dir="$dotfiles_dir" update-index --add --cacheinfo 10064,$(git --git-dir="$dotfiles_dir" hash-object -w "$infofile"),"$dotfile"
-    git --git-dir "$dotfiles_dir" checkout --quiet
+    _git update-index --add --cacheinfo 10064,$(_git hash-object -w "$infofile"),"$dotfile"
+    _git checkout --quiet
 }
 
 readme() {
     local readme_file="$(mktemp -dt dotfiles.XXXXXX)/README.md"
-    git --git-dir="$dotfiles_dir" show :README.md > "$readme_file"
+    _git show :README.md > "$readme_file"
     ${EDITOR:-vim} "$readme_file"
-    git --git-dir="$dotfiles_dir" update-index --add --cacheinfo 10064,$(git --git-dir="$dotfiles_dir" hash-object -w "$readme_file"),README.md
+    _git update-index --add --cacheinfo 10064,$(_git hash-object -w "$readme_file"),README.md
     rm -r "${readme_file%README.md}"
-    git --git-dir "$dotfiles_dir" checkout --quiet
+    _git checkout --quiet
 }
 
 # Main
@@ -201,5 +205,5 @@ case $dot_cmd in
         $dot_cmd
         ;;
     *)
-        git --git-dir="$dotfiles_dir" $dot_cmd "$@"
+        _git $dot_cmd "$@"
 esac
