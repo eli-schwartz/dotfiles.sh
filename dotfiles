@@ -166,7 +166,7 @@ edit_info() {
 sparse_edit() {
     local sparse_file="$1"; shift
     local temp_dir="$(mktemp -dt dotfiles.XXXXXX)"
-    git --git-dir="$dotfiles_dir" show :"$sparse_file" > "$temp_dir/$sparse_file"
+    git --git-dir="$dotfiles_dir" show :"$sparse_file" 2>/dev/null > "$temp_dir/$sparse_file"
     ${EDITOR:-vim} "$temp_dir/$sparse_file"
     git --git-dir="$dotfiles_dir" update-index --add \
          --cacheinfo 10064,"$(git --git-dir="$dotfiles_dir" hash-object -w "$temp_dir/$sparse_file")","$sparse_file"
