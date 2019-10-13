@@ -163,12 +163,14 @@ edit_info() {
     git --git-dir "$dotfiles_dir" checkout --quiet
 }
 
-readme() {
-    local readme_file="$(mktemp -dt dotfiles.XXXXXX)/README.md"
-    git --git-dir="$dotfiles_dir" show :README.md > "$readme_file"
-    ${EDITOR:-vim} "$readme_file"
-    git --git-dir="$dotfiles_dir" update-index --add --cacheinfo 10064,$(git --git-dir="$dotfiles_dir" hash-object -w "$readme_file"),README.md
-    rm -r "${readme_file%README.md}"
+sparse_edit() {
+    local sparse_file="$1"; shift
+    local temp_dir="$(mktemp -dt dotfiles.XXXXXX)"
+    git --git-dir="$dotfiles_dir" show :"$sparse_file" 2>/dev/null > "$temp_dir/$sparse_file"
+    ${EDITOR:-vim} "$temp_dir/$sparse_file"
+    git --git-dir="$dotfiles_dir" update-index --add \
+         --cacheinfo 10064,"$(git --git-dir="$dotfiles_dir" hash-object -w "$temp_dir/$sparse_file")","$sparse_file"
+    rm -r "$temp_dir"
     git --git-dir "$dotfiles_dir" checkout --quiet
 }
 
@@ -197,8 +199,11 @@ case $dot_cmd in
     attributes)
         edit_info attributes .gitattributes "$@"
         ;;
+    edit)
+        sparse_edit "$@"
+        ;;
     readme)
-        $dot_cmd
+        sparse_edit README.md
         ;;
     *)
         git --git-dir="$dotfiles_dir" $dot_cmd "$@"
